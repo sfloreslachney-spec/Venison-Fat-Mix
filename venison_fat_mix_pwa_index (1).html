@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Venison Fat Mix — Calculator</title>
+  <meta name="description" content="Calculate fat-to-meat mixes for venison. PWA installable, saves mixes locally." />
+  <meta name="theme-color" content="#3b5323" />
+  <style>
+    :root {
+      --bg: #1a1f16;
+      --card: #232b1d;
+      --accent: #ff6b00;
+      --accent-dark: #cc5500;
+      --accent-light: #ffa64d;
+      --muted: #c2c8b7;
+      --text: #f5f5f0;
+      --glass: rgba(255, 255, 255, 0.05);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      color: var(--text);
+      background: linear-gradient(180deg, #0e1209 0%, #1c2313 80%);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .app { max-width: 760px; margin: 20px auto; padding: 18px; }
+    header {
+      display: flex; gap: 12px; align-items: center; margin-bottom: 12px;
+      background: linear-gradient(135deg, #2a361f, #3b5323);
+      padding: 10px 14px; border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    }
+    h1 { font-size: 22px; margin: 0; color: var(--accent-light); }
+
+    .card {
+      background: var(--card);
+      padding: 16px;
+      border-radius: 12px;
+      box-shadow: 0 6px 20px rgba(10, 14, 5, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .grid { display: grid; gap: 12px; }
+    label { font-size: 13px; color: var(--muted); }
+    input, select {
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: var(--glass);
+      color: inherit;
+      width: 100%;
+    }
+    button {
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: none;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+    button:hover { background: var(--accent-dark); transform: translateY(-1px); }
+
+    footer {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 13px;
+      text-align: center;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div>
+        <h1>Venison Fat Mix</h1>
+        <div class="small muted">Simple calculator — PWA installable</div>
+      </div>
+    </header>
+
+    <main class="card grid">
+      <label>Measurement System</label>
+      <select id="unitSelect">
+        <option value="lbs" selected>Pounds (lbs)</option>
+        <option value="kg">Kilograms (kg)</option>
+      </select>
+
+      <label>Fat Source</label>
+      <select id="fatSource">
+        <option value="pork" selected>Pork Fat</option>
+        <option value="beef">Beef Fat</option>
+        <option value="lamb">Lamb Fat</option>
+        <option value="custom">Custom</option>
+      </select>
+
+      <label>Fat Percentage (%)</label>
+      <input id="fatPercent" type="number" value="20" min="0" max="100">
+
+      <label>Meat Percentage (%)</label>
+      <input id="meatPercent" type="number" value="80" min="0" max="100" readonly>
+
+      <label>Enter Meat Weight</label>
+      <input id="meatWeight" type="number" value="10" min="0">
+
+      <label>Or Enter Fat Weight</label>
+      <input id="fatWeight" type="number" placeholder="Optional">
+
+      <div class="result">
+        <strong class="big">Total Mix Weight:</strong>
+        <div id="totalWeight">—</div>
+      </div>
+    </main>
+
+    <footer>
+      © 2025 Venison Fat Mix — Built for hunters, by hunters.
+    </footer>
+  </div>
+
+  <script>
+    const fatInput = document.getElementById('fatPercent');
+    const meatInput = document.getElementById('meatPercent');
+    const meatWeightInput = document.getElementById('meatWeight');
+    const fatWeightInput = document.getElementById('fatWeight');
+    const totalOutput = document.getElementById('totalWeight');
+    const unitSelect = document.getElementById('unitSelect');
+
+    function updatePercentages() {
+      const fat = parseFloat(fatInput.value) || 0;
+      meatInput.value = 100 - fat;
+      updateWeights();
+    }
+
+    function updateWeights() {
+      const fatPercent = parseFloat(fatInput.value) / 100;
+      const meatPercent = parseFloat(meatInput.value) / 100;
+      const meatWeight = parseFloat(meatWeightInput.value) || 0;
+      const fatWeight = parseFloat(fatWeightInput.value) || 0;
+
+      if (document.activeElement === meatWeightInput && meatWeight > 0) {
+        const fatNeeded = meatWeight * (fatPercent / meatPercent);
+        fatWeightInput.value = fatNeeded.toFixed(2);
+        totalOutput.textContent = `${(meatWeight + fatNeeded).toFixed(2)} ${unitSelect.value}`;
+      } else if (document.activeElement === fatWeightInput && fatWeight > 0) {
+        const meatNeeded = fatWeight * (meatPercent / fatPercent);
+        meatWeightInput.value = meatNeeded.toFixed(2);
+        totalOutput.textContent = `${(meatNeeded + fatWeight).toFixed(2)} ${unitSelect.value}`;
+      }
+    }
+
+    fatInput.addEventListener('input', updatePercentages);
+    meatWeightInput.addEventListener('input', updateWeights);
+    fatWeightInput.addEventListener('input', updateWeights);
+  </script>
+</body>
+</html>
